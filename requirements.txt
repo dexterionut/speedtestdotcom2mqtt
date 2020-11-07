@@ -1,0 +1,4 @@
+python-dotenv
+speedtest-cli
+schedule
+paho-mqtt

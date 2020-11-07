@@ -1,0 +1,5 @@
+#!/bin/sh
+
+docker-compose --compatibility up -d
+
+docker-compose logs -f speedtestdotcom2mqtt
