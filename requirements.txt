@@ -1,4 +1,6 @@
 python-dotenv
-speedtest-cli
 schedule
 paho-mqtt
+selenium
+bs4
+pingparsing

@@ -1,27 +1,16 @@
 import json
 import logging
 import os
-import ssl
 import sys
 from time import sleep
 
 import schedule
 from dotenv import load_dotenv
-import speedtest
+
+from fast_com import get_stats, SpeedTestException
+from mqtt import mqtt_publish, MQTTException
 
 load_dotenv()
-
-
-class SpeedTestException(Exception):
-
-    def __init__(self, message):
-        self.message = message
-
-
-class MQTTException(Exception):
-
-    def __init__(self, message):
-        self.message = message
 
 
 def config_logging():
@@ -32,58 +21,6 @@ def config_logging():
     logging.Formatter.converter = time.gmtime
 
 
-def bypass_https():
-    if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
-            getattr(ssl, '_create_unverified_context', None)):
-        ssl._create_default_https_context = ssl._create_unverified_context
-
-
-def get_stats():
-    try:
-        servers = []
-
-        s = speedtest.Speedtest(secure=False)
-        s.get_servers(servers)
-        s.get_best_server()
-        s.download()
-        s.upload()
-        s.results.share()
-
-        result_dict = s.results.dict()
-
-        return {
-            'download': round(result_dict['download'] / 1024 / 1024, 2),
-            'upload': round(result_dict['upload'] / 1024 / 1024, 2),
-            'unit': 'Mbps',
-            'ping': int(round(result_dict['ping'], 0)),
-            'server': '{} [{}, {}]'.format(result_dict['server']['sponsor'], result_dict['server']['name'],
-                                           result_dict['server']['country'])
-        }
-    except Exception as e:
-        raise SpeedTestException(str(e))
-
-
-def mqtt_publish(topic, payload, hostname, port=1883, username=None, password=None):
-    try:
-        import paho.mqtt.publish as publish
-
-        auth = None
-
-        if username and password:
-            auth = {'username': username, 'password': password}
-
-        publish.single(
-            hostname=hostname,
-            port=port,
-            auth=auth,
-            topic=topic,
-            payload=payload,
-            keepalive=10
-        )
-    except Exception as e:
-        raise MQTTException(str(e))
-
-
 def main():
     MQTT_HOSTNAME = os.getenv('MQTT_HOSTNAME')
     MQTT_PORT = int(os.getenv('MQTT_PORT'))
@@ -92,7 +29,6 @@ def main():
     MQTT_TOPIC = os.getenv('MQTT_TOPIC')
 
     config_logging()
-    bypass_https()
 
     try:
         stats = get_stats()
