@@ -50,9 +50,9 @@ def main():
 if __name__ == '__main__':
     RUN_EVERY = int(os.getenv('RUN_EVERY', -1))
 
-    if RUN_EVERY <= 0:
-        main()
-    else:
+    main()
+
+    if RUN_EVERY > 0:
         schedule.every(RUN_EVERY).seconds.do(main)
 
         while True:
