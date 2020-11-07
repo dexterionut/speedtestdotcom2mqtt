@@ -52,8 +52,10 @@ def extract_speed_info(soup: BeautifulSoup) -> dict:
     server_locations = soup.select_one('#server-locations').text
 
     return {
-        'download': f'{dl_speed} {dl_unit}',
-        'upload': f'{upload_speed} {upload_unit}',
+        'download_speed': dl_speed,
+        'download_unit': dl_unit,
+        'upload_speed': upload_speed,
+        'upload_unit': upload_unit,
         'server_locations': server_locations.replace(u'\xa0', ' ')
     }
 
